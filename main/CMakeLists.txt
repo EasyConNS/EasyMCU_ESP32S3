@@ -1,0 +1,18 @@
+idf_component_register(
+    SRCS
+        "main.c"
+        "easycon/easycon.c"
+        "hid/hid_device.c"
+        "uart/uart_handler.c"
+        "storage/storage.c"
+    INCLUDE_DIRS
+        "."
+        "easycon"
+        "hid"
+        "uart"
+        "storage"
+    REQUIRES
+        driver
+        nvs_flash
+        tinyusb
+)

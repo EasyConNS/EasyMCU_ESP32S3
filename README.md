@@ -11,6 +11,8 @@ EasyMCU_ESP32S3是一个基于ESP32-S3开发板的游戏手柄模拟项目，通
 
 ## 硬件连接
 
+![ESP32-S3-DevKitC-1开发板](img/ESP32-S3-DevKitC-1.png)
+
 1. **电脑连接**：
    - 板子背面标有"com"的USB-C口连接到电脑
    - 用于烧录固件和接收EasyCon命令
@@ -20,6 +22,16 @@ EasyMCU_ESP32S3是一个基于ESP32-S3开发板的游戏手柄模拟项目，通
    - 用于模拟游戏手柄
 
 ## 烧录指南
+
+### 固件路径
+
+项目根目录下的 `/release_bins/` 文件夹
+
+### 固件文件列表
+
+- `EasyMCU_ESP32S3_n16r8.bin` - 适用于 ESP32-S3-DevKitC-1 N16R8（已测试）
+- `EasyMCU_ESP32S3_n8r2.bin` - 适用于 ESP32-S3-DevKitC-1 N8R2 版本（需自行测试）
+- `EasyMCU_ESP32S3_n8r8.bin` - 适用于 ESP32-S3-DevKitC-1 N8R8 版本（需自行测试）
 
 ### 进入烧录模式
 1. 按住板子上的"BOOT"按钮
@@ -38,7 +50,7 @@ EasyMCU_ESP32S3是一个基于ESP32-S3开发板的游戏手柄模拟项目，通
 
 ## 使用方法
 
-1. **安装EasyCon软件**：在电脑上安装EasyCon软件
+1. **安装EasyCon软件**：从 [EasyCon 官方 GitHub 仓库](https://github.com/EasyConNS/EasyCon) 下载并安装软件
 2. **连接设备**：
    - 通过标有"com"的USB-C口将ESP32连接到电脑
    - 通过标有"usb"的USB-C口将ESP32连接到Nintendo Switch

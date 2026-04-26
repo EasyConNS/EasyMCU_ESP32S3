@@ -70,26 +70,12 @@ void EasyCon_serial_send(uint8_t byte) {
 }
 
 void EasyCon_script_init(void) {
-    uint8_t mem0 = EasyCon_read_byte(0);
-    uint8_t mem1 = EasyCon_read_byte(1);
-    uint16_t len = 0;
-    if ((mem0 != 0xFF) || (mem1 != 0xFF)) {
-        len = mem0 | ((mem1 & 0x7F) << 8);
-        EasyCon_write_start(0);
-        EasyCon_write_data(0, mem, len);
-        _seed = (uint16_t)EasyCon_read_byte(SEED_OFFSET + 1) << 8 | EasyCon_read_byte(SEED_OFFSET);
-        _seed += 1;
-        srand(_seed);
-        EasyCon_write_data(SEED_OFFSET, (uint8_t *)&_seed, 2);
-        EasyCon_write_end(0);
-    } else {
-        _seed = (uint16_t)EasyCon_read_byte(SEED_OFFSET + 1) << 8 | EasyCon_read_byte(SEED_OFFSET);
-        _seed += 1;
-        srand(_seed);
-        EasyCon_write_start(1);
-        EasyCon_write_data(SEED_OFFSET, (uint8_t *)&_seed, 2);
-        EasyCon_write_end(1);
-    }
+    _seed = (uint16_t)EasyCon_read_byte(SEED_OFFSET + 1) << 8 | EasyCon_read_byte(SEED_OFFSET);
+    _seed += 1;
+    srand(_seed);
+    EasyCon_write_start(1);
+    EasyCon_write_data(SEED_OFFSET, (uint8_t *)&_seed, 2);
+    EasyCon_write_end(1);
     memset(mem, 0, sizeof(mem));
 
     for (int i = 0; i < 16; i++) {
@@ -195,16 +181,9 @@ void EasyCon_script_task(void) {
             return;
         }
         _addr = script_addr;
-        _ins0 = EasyCon_read_byte(script_addr);
-        script_addr++;
-        _ins1 = EasyCon_read_byte(script_addr);
-        script_addr++;
+        _ins0 = EasyCon_read_byte(script_addr++);
+        _ins1 = EasyCon_read_byte(script_addr++);
         _ins_word = (uint16_t)_ins0 | ((uint16_t)_ins1 << 8);
-        _ins2 = EasyCon_read_byte(script_addr);
-        script_addr++;
-        _ins3 = EasyCon_read_byte(script_addr);
-        script_addr++;
-        _ins_dword = (uint32_t)_ins0 | ((uint32_t)_ins1 << 8) | ((uint32_t)_ins2 << 16) | ((uint32_t)_ins3 << 24);
         int32_t n;
         int16_t reg;
         if (_ins0 & 0x80) {
@@ -281,6 +260,7 @@ void EasyCon_script_task(void) {
                 } else if ((_ins0 & 0x02) == 0) {
                     _ins2 = EasyCon_read_byte(script_addr++);
                     _ins3 = EasyCon_read_byte(script_addr++);
+                    _ins_dword = (uint32_t)_ins0 | ((uint32_t)_ins1 << 8) | ((uint32_t)_ins2 << 16) | ((uint32_t)_ins3 << 24);
                     n = _insEx & ((1L << 25) - 1);
                     n *= 10;
                 } else {
@@ -316,6 +296,7 @@ void EasyCon_script_task(void) {
                 if (_ins0 & 0x04) {
                     _ins2 = EasyCon_read_byte(script_addr++);
                     _ins3 = EasyCon_read_byte(script_addr++);
+                    _ins_dword = (uint32_t)_ins0 | ((uint32_t)_ins1 << 8) | ((uint32_t)_ins2 << 16) | ((uint32_t)_ins3 << 24);
                 }
                 if (E_SET) {
                     if (_e_val == 1) {
@@ -396,20 +377,15 @@ void EasyCon_script_task(void) {
             case 0x05:
                 if ((_ins0 & 0x04) == 0) {
                     _ri0 = (_ins >> 7) & 0x07;
-                    if (_ri0 == 0) {
-                        if ((_ins1 & (1 << 6)) == 0) {
-                            _ins2 = EasyCon_read_byte(script_addr++);
-                            _ins3 = EasyCon_read_byte(script_addr++);
-                            _v = (_ins >> 3) & 0x07;
-                            _ri0 = _ins & 0x07;
-                            reg = _insEx;
-                            binaryop(_v, _ri0, reg);
-                        }
-                    } else {
-                        reg = _ins1 & 0x7F;
-                        reg <<= 9;
-                        reg >>= 9;
-                        REG(_ri0) = reg;
+                    if ((_ins1 & (1 << 6)) == 0) {
+                        // binary operations on instant
+                        _ins2 = EasyCon_read_byte(script_addr++);
+                        _ins3 = EasyCon_read_byte(script_addr++);
+                        _ins_dword = (uint32_t)_ins0 | ((uint32_t)_ins1 << 8) | ((uint32_t)_ins2 << 16) | ((uint32_t)_ins3 << 24);
+                        _v = (_ins >> 3) & 0x07;
+                        _ri0 = _ins & 0x07;
+                        reg = _insEx;
+                        binaryop(_v, _ri0, reg);
                     }
                 } else if ((_ins0 & 0x06) == 0x04) {
                     _v = (_ins >> 6) & 0x07;
